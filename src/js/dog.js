@@ -119,23 +119,23 @@ class Dog {
         let {dest} = dogThoughts;
 
         if (dogThoughts.goalMode != IDLE) {
-            dogThoughts.mode = dogThoughts.goalMode;
-            dogThoughts.goalMode = IDLE;
+            this.switchState(dogThoughts.goalMode);
         } else {
             const n = randrange(0, 100);
 
             const windowOccupied = this.taskOccupied(STARE_OUT_THE_WINDOW);
             const chairOccupied = this.taskOccupied(TAKE_UP_THE_WHOLE_COUCH);
 
-            dogThoughts.mode = n < 10 ? CHASE_TAIL_LIKE_A_DUMMY :
+            let mode = n < 10 ? CHASE_TAIL_LIKE_A_DUMMY :
                 n < 20 ? (!windowOccupied ? STARE_OUT_THE_WINDOW : MOVE_OUT) :
                 n < 30 ? PUPPY_NAP :
                 n < 40 ? (!chairOccupied ? TAKE_UP_THE_WHOLE_COUCH : MOVE_OUT) :
                 n < 50 ? STRETCH_IN_THE_MIDDLE_OF_THE_FLOOR :
                 MOVE_OUT;
+
+            this.switchState(mode);
         }
 
-        this.states[dogThoughts.mode].transition.bind(this)();
     }
 
     // move out state
@@ -146,7 +146,7 @@ class Dog {
 
         let foundSpotButNotADogSpotButALocationSpot = false;
 
-        while (foundSpotButNotADogSpotButALocationSpot == false) {
+        while (foundSpotButNotADogSpotButALocationSpot == false && dogThoughts.goalMode == IDLE) {
             console.log("sniff sniff");
             const x = randrange(10, 400);
             const y = randrange(70, 126);
@@ -172,8 +172,8 @@ class Dog {
         let {mode, dest} = dogThoughts;
 
         if (dest.outY <= dog.y) {
-            dogThoughts.mode = WAIT;
-            setTimeout(() => { dogThoughts.mode = MOVE_IN }, randrange(250, 750))
+            this.switchState(WAIT);
+            setTimeout(() => { this.switchState(MOVE_IN) }, randrange(250, 750))
             console.log("bark!");
         }
         else {
@@ -188,9 +188,9 @@ class Dog {
         let {mode, dest} = dogThoughts;
 
         if (dog.x == dest.x && dog.y == dest.y) {
-            dogThoughts.mode = WAIT;
+            this.switchState(WAIT);
             this.faceRandomDirection();
-            setTimeout(() => { dogThoughts.mode = IDLE }, dogThoughts.goalMode != IDLE ? 0 : randrange(1000, 4000))
+            setTimeout(() => { this.switchState(IDLE); }, dogThoughts.goalMode != IDLE ? 0 : randrange(1000, 4000))
             return;
         }
 
@@ -213,7 +213,7 @@ class Dog {
     transitionNapTime() {
         console.log('yawn');
         let {dogThoughts} = this;
-        setTimeout(() => { dogThoughts.mode = IDLE }, randrange(5000, 10000));
+        setTimeout(() => { this.switchState(IDLE); }, randrange(5000, 10000));
     }
 
     updateNapTime() {
@@ -234,10 +234,10 @@ class Dog {
             dest.x = wx;
             dest.y = wy;
             dest.outY = 104;
-            dogThoughts.mode = MOVE_OUT;
             dogThoughts.goalMode = STARE_OUT_THE_WINDOW;
+            this.switchState(MOVE_OUT);
         } else {
-            setTimeout(() => { dogThoughts.mode = IDLE }, randrange(3000, 7000));            
+            setTimeout(() => { this.switchState(IDLE); dogThoughts.goalMode = IDLE; }, randrange(3000, 7000));            
         }
     }
 
@@ -258,10 +258,10 @@ class Dog {
             dest.x = wx;
             dest.y = wy;
             dest.outY = 104;
-            dogThoughts.mode = MOVE_OUT;
             dogThoughts.goalMode = TAKE_UP_THE_WHOLE_COUCH;
+            this.switchState(MOVE_OUT);
         } else {
-            setTimeout(() => { dogThoughts.mode = IDLE }, randrange(7000, 14000));            
+            setTimeout(() => { this.switchState(IDLE); dogThoughts.goalMode = IDLE; }, randrange(7000, 14000));            
         }
     }
 
@@ -275,7 +275,7 @@ class Dog {
     transitionTail() {
         console.log('ruff ruff ruff ruff');
         let {dogThoughts} = this;
-        setTimeout(() => { dogThoughts.mode = IDLE }, randrange(2000, 5000));
+        setTimeout(() => { this.switchState(IDLE); }, randrange(2000, 5000));
     }
 
     updateTail() {
@@ -288,7 +288,7 @@ class Dog {
     transitionStretch() {
         console.log('low pitched grumble');
         let {dogThoughts} = this;
-        setTimeout(() => { dogThoughts.mode = IDLE }, randrange(3000, 6000));
+        setTimeout(() => { this.switchState(IDLE); }, randrange(3000, 6000));
     }
 
     updateStretch() {
@@ -297,6 +297,11 @@ class Dog {
     }
 
     // utils
+
+    switchState(mode) {
+        this.dogThoughts.mode = mode;
+        this.states[this.dogThoughts.mode].transition.bind(this)();
+    }
 
     taskOccupied(task) {
         for (let other of this.others) {
