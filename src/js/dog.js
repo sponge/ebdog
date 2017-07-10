@@ -17,8 +17,9 @@ function randrange(min, max) {
 }
 
 class Dog {
-	constructor(x, y) {
+	constructor(others, x, y) {
         this.time = 0;
+        this.others = others;
 
         this.dogThoughts = {
             mode: IDLE,
@@ -123,10 +124,13 @@ class Dog {
         } else {
             const n = randrange(0, 100);
 
+            const windowOccupied = this.taskOccupied(STARE_OUT_THE_WINDOW);
+            const chairOccupied = this.taskOccupied(TAKE_UP_THE_WHOLE_COUCH);
+
             dogThoughts.mode = n < 10 ? CHASE_TAIL_LIKE_A_DUMMY :
-                n < 20 ? STARE_OUT_THE_WINDOW :
+                n < 20 ? (!windowOccupied ? STARE_OUT_THE_WINDOW : MOVE_OUT) :
                 n < 30 ? PUPPY_NAP :
-                n < 40 ? TAKE_UP_THE_WHOLE_COUCH :
+                n < 40 ? (!chairOccupied ? TAKE_UP_THE_WHOLE_COUCH : MOVE_OUT) :
                 n < 50 ? STRETCH_IN_THE_MIDDLE_OF_THE_FLOOR :
                 MOVE_OUT;
         }
@@ -293,6 +297,16 @@ class Dog {
     }
 
     // utils
+
+    taskOccupied(task) {
+        for (let other of this.others) {
+            if (task == other.dogThoughts.mode || task == other.dogThoughts.goalMode) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     moveLeft() {
         let {dog} = this;
