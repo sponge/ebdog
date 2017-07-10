@@ -32,9 +32,15 @@
 			}
 		</style>
 		<script src="js/main.js"></script>
+		<script type="text/javascript">
+			function toggleMute() {
+				bgm.paused ? bgm.play() : bgm.pause();
+			}
+		</script>
 	</head>
 	<body>
-		<div id="container">
+		<audio id="bgm" src="images/dog_watching_music.mp3" autoplay loop></audio>
+		<div id="container" onclick="toggleMute()">
 		
 		</div>
 	</body>
