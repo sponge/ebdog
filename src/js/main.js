@@ -39,7 +39,8 @@ class Game {
 		this.dogContainer = new PIXI.Container();
 		app.stage.addChild(this.dogContainer);
 
-		for (let i = 0; i < 3; i++) {
+		const numDogs = !location.hash.length ? 3 : parseInt(location.hash.substr(1), 10);
+		for (let i = 0; i < numDogs; i++) {
 			const dog = new Dog(this.dogs);
 			this.dogs.push( dog );
 			this.dogContainer.addChild(dog.dog);
